@@ -109,12 +109,14 @@ sdks: # Build all the SDKs
 .PHONY: nodejs-sdk
 nodejs-sdk: $(sdk_deps)
 nodejs-sdk: # Build the Node SDK
+	rm -Rf sdk/nodejs/bin/dist
 	bin/$(tfgen) nodejs \
 		--overlays provider/overlays/nodejs \
 		--out sdk/nodejs
 	cd sdk/nodejs
 	yarn install
 	yarn run tsc
+	cp -R scripts bin
 	cp $(provider_readme) ./bin/README.md
 	cp ../../LICENSE \
 		package.json \
@@ -124,6 +126,11 @@ nodejs-sdk: # Build the Node SDK
 		-e "s/\$${VERSION}/$(nodejs_version)/g" \
 		./bin/package.json
 	rm bin/package.json.bak
+	# TODO: Find a better way to handle this
+	sed -i.bak \
+		-e "s/download\/\$${VERSION}/download\/$(nodejs_version)/g" \
+		./bin/scripts/install-pulumi-plugin.js
+	rm bin/scripts/install-pulumi-plugin.js.bak
 	cd bin
 	npm pack
 	mkdir dist
