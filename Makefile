@@ -153,9 +153,14 @@ python-sdk: # Build the Python SDK
 	cd ./bin
 	sed -i.bak \
 		-e 's/^VERSION = .*/VERSION = "$(pypi_version)"/g' \
+		-e 's/$${VERSION}/$(pypi_version)/g' \
 		-e 's/^PLUGIN_VERSION = .*/PLUGIN_VERSION = "$(version)"/g' \
 		setup.py
 	rm setup.py.bak
+	sed -i.bak \
+		-e 's/$${VERSION}/$(version)/g' \
+		pulumi_hcp/_utilities.py
+	rm pulumi_hcp/_utilities.py.bak
 	$(PYTHON) setup.py build sdist
 
 .PHONY: go-sdk
