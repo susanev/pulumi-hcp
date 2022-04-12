@@ -55,7 +55,7 @@ steps:
           - docker#v3.11.0:
               image: "${BUILD_ENVIRONMENT_IMAGE}"
         artifact_paths:
-          - sdk/python/bin/dist/*.tar.gz
+          - sdk/python/bin/dist/*
 
       - label: ":nodejs: Build NodeJS SDK"
         key: build-nodejs-sdk
@@ -68,7 +68,7 @@ steps:
           - docker#v3.11.0:
               image: "${BUILD_ENVIRONMENT_IMAGE}"
         artifact_paths:
-          - sdk/nodejs/bin/dist/*.tgz
+          - sdk/nodejs/bin/dist/*
 
   - wait
 
