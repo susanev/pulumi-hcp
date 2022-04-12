@@ -95,6 +95,32 @@ steps:
 
   - wait
 
+  # We want to ensure that installing the SDKs will *also* install the
+  # correct provider binary. This has to happen after the Github
+  # release (because that's where the SDKs will pull the binaries
+  # from), but before we push to PyPI, NPM, etc. (because we don't
+  # want to publish something that can't pull the binaries).
+  #
+  # We're just installing from the tarball artifacts.
+  - group: "Validate Installation"
+    steps:
+      - label: ":{{ matrix.sdk }}: SDK Installation Validation"
+        command:
+          - .buildkite/scripts/validate-sdk-install {{ matrix.sdk }} sdk/{{ matrix.sdk }}/bin/dist/* $(buildkite-agent meta-data get release-tag)
+        plugins:
+          - artifacts#v1.5.0:
+              download: sdk/{{ matrix.sdk }}/bin/dist/*
+          - docker#v3.11.0:
+              image: "${BUILD_ENVIRONMENT_IMAGE}"
+        matrix:
+          setup:
+            sdk:
+              - nodejs
+              - python
+              # TODO: go
+
+  - wait
+
   # We're publishing the SDKs *after* the Github release, because in
   # order to *use* the SDKs, the binaries must be in the Github
   # release first.
