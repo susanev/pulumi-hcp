@@ -102,22 +102,32 @@ steps:
   # want to publish something that can't pull the binaries).
   #
   # We're just installing from the tarball artifacts.
+  #
+  # Ideally, I'd like to use a matrix here, but you cannot currently
+  # interpolate matrix values in plugin configurations. We *could*
+  # pull the artifact downloading into the script, if we needed to,
+  # though.
   - group: "Validate Installation"
     steps:
-      - label: ":{{ matrix.sdk }}: SDK Installation Validation"
+      - label: ":python: SDK Installation Validation"
         command:
-          - .buildkite/scripts/validate-sdk-install {{ matrix.sdk }} sdk/{{ matrix.sdk }}/bin/dist/* $(buildkite-agent meta-data get release-tag)
+          - .buildkite/scripts/validate-sdk-install python sdk/python/bin/dist/* $(buildkite-agent meta-data get release-tag)
         plugins:
           - artifacts#v1.5.0:
-              download: sdk/{{ matrix.sdk }}/bin/dist/*
+              download: sdk/python/bin/dist/*
           - docker#v3.11.0:
               image: "${BUILD_ENVIRONMENT_IMAGE}"
-        matrix:
-          setup:
-            sdk:
-              - nodejs
-              - python
-              # TODO: go
+
+      - label: ":nodejs: SDK Installation Validation"
+        command:
+          - .buildkite/scripts/validate-sdk-install nodejs sdk/nodejs/bin/dist/* $(buildkite-agent meta-data get release-tag)
+        plugins:
+          - artifacts#v1.5.0:
+              download: sdk/nodejs/bin/dist/*
+          - docker#v3.11.0:
+              image: "${BUILD_ENVIRONMENT_IMAGE}"
+
+      # TODO: go
 
   - wait
 
