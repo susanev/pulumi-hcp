@@ -54,14 +54,14 @@ trap cleanup EXIT
     case "${sdk}" in
         "nodejs")
             echo "--- :nodejs: Installing from ${sdk_tarball}"
-            npm install "${sdk_tarball}"
+            npm install "${sdk_tarball}" --loglevel verbose --foreground-scripts
             ;;
         "python")
             echo "--- :python: Installing from ${sdk_tarball}"
             python3 -m venv venv
             source venv/bin/activate
             pip install wheel
-            pip install "${sdk_tarball}"
+            pip install "${sdk_tarball}" -vvv
             ;;
         *)
             echo "--- :rotating_light: Unsupported SDK '${sdk}'!"
