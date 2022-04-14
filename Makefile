@@ -126,11 +126,11 @@ nodejs-sdk: # Build the Node SDK
 		-e "s/\$${VERSION}/$(nodejs_version)/g" \
 		./bin/package.json
 	rm bin/package.json.bak
-	# TODO: Find a better way to handle this
-	sed -i.bak \
-		-e "s/download\/\$${VERSION}/download\/$(nodejs_version)/g" \
-		./bin/scripts/install-pulumi-plugin.js
-	rm bin/scripts/install-pulumi-plugin.js.bak
+	# # TODO: Find a better way to handle this
+	# sed -i.bak \
+	#	-e "s/download\/\$${VERSION}/download\/$(nodejs_version)/g" \
+	#	./bin/scripts/install-pulumi-plugin.js
+	# rm bin/scripts/install-pulumi-plugin.js.bak
 	cd bin
 	npm pack
 	mkdir dist
