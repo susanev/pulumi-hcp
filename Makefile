@@ -6,6 +6,10 @@ version_path    := provider/pkg/version.Version
 tfgen           := pulumi-tfgen-$(pack)
 provider        := pulumi-resource-$(pack)
 version         := $(shell pulumictl get version)
+# I can't find a `pulumictl get version` invocation that will output
+# the `v` in front of the semver besides Javascript. To make things
+# more clear, though, I'll just manually create such a variable here.
+v_version       := v$(version)
 nodejs_version  := $(shell pulumictl get version --language javascript)
 pypi_version    := $(shell pulumictl get version --language python)
 # dotnet_version := $(shell pulumictl get version --language dotnet)
@@ -126,11 +130,25 @@ nodejs-sdk: # Build the Node SDK
 		-e "s/\$${VERSION}/$(nodejs_version)/g" \
 		./bin/package.json
 	rm bin/package.json.bak
-	# # TODO: Find a better way to handle this
-	# sed -i.bak \
-	#	-e "s/download\/\$${VERSION}/download\/$(nodejs_version)/g" \
-	#	./bin/scripts/install-pulumi-plugin.js
-	# rm bin/scripts/install-pulumi-plugin.js.bak
+	# TODO: I believe this is due to a bug... without this, we
+	# ultimately end up running the following:
+	#
+	#    pulumi plugin install \
+	#        --server 'https://github.com/grapl-security/pulumi-hcp/releases/download/${VERSION}'\
+	#        resource hcp v0.1.1
+	#
+	# Unfortunately, Pulumi is expanding that to
+	#
+	#     https://github.com/grapl-security/pulumi-hcp/releases/download/0.1.1/pulumi-resource-hcp-v0.1.1-linux-amd64.tar.gz
+	#
+	# which is incorrect.
+	#
+	# Note that this could use $(nodejs_version) but using our
+	# $(v_version) workaround is more explicit.
+	sed -i.bak \
+		-e "s/download\/\$${VERSION}/download\/$(v_version)/g" \
+		./bin/scripts/install-pulumi-plugin.js
+	rm bin/scripts/install-pulumi-plugin.js.bak
 	cd bin
 	npm pack
 	mkdir dist
@@ -151,16 +169,13 @@ python-sdk: # Build the Python SDK
 	cp -R . ../python.bin
 	mv ../python.bin ./bin
 	cd ./bin
+	# Note the v_version workaround, similar to what we do for nodejs
 	sed -i.bak \
 		-e 's/^VERSION = .*/VERSION = "$(pypi_version)"/g' \
-		-e 's/$${VERSION}/$(pypi_version)/g' \
+		-e 's/$${VERSION}/$(v_version)/g' \
 		-e 's/^PLUGIN_VERSION = .*/PLUGIN_VERSION = "$(version)"/g' \
 		setup.py
 	rm setup.py.bak
-	sed -i.bak \
-		-e 's/$${VERSION}/$(version)/g' \
-		pulumi_hcp/_utilities.py
-	rm pulumi_hcp/_utilities.py.bak
 	$(PYTHON) setup.py build sdist
 
 .PHONY: go-sdk
